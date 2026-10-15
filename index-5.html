@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b68">
+<title>Socio Préstamos</title>
+<style>
+:root{--blue:#123b68;--blue2:#1d5a96;--bg:#f3f6fa;--text:#172435;--muted:#64748b;--green:#168454;--red:#c0392b;--border:#dce4ee}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;padding:22px 16px 24px}
+.wrap{max-width:1000px;margin:auto}header h1{margin:0;font-size:25px}header p{margin:5px 0 0;color:#dbeafe;font-size:14px}
+main{max-width:1000px;margin:16px auto;padding:0 12px 30px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}.stat,.panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 2px 7px #17324d0a}
+.stat small{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;margin-top:6px;font-size:19px;overflow-wrap:anywhere}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin:12px 0}.tab{border:1px solid var(--border);background:#fff;border-radius:10px;padding:10px 13px;font-weight:650;white-space:nowrap;color:var(--blue)}.tab.active{background:var(--blue);color:white}
+h2{font-size:18px;margin:0 0 14px}.panel{margin-bottom:14px}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;font-size:13px;font-weight:650;margin-bottom:6px}
+input,select,textarea{width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:9px;padding:11px 10px;font:inherit;background:#fff;color:var(--text)}input:focus,select:focus{outline:2px solid #93c5fd;border-color:#2563eb}
+button{font:inherit;cursor:pointer}.primary,.secondary,.danger{border:0;border-radius:10px;padding:11px 14px;font-weight:700}.primary{background:var(--blue);color:#fff}.secondary{background:#e8eff8;color:var(--blue)}.danger{background:#fee2e2;color:#991b1b}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}.list{display:grid;gap:10px}.loan{border:1px solid var(--border);border-radius:12px;padding:13px;background:#fff}.loan-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.loan h3{font-size:16px;margin:0 0 4px}.loan p{margin:4px 0;color:var(--muted);font-size:13px}.amount{font-weight:750;color:var(--blue);text-align:right}.pill{display:inline-block;font-size:11px;padding:4px 8px;border-radius:20px;background:#e0f2fe;color:#075985;margin-top:5px}.empty{padding:20px;text-align:center;color:var(--muted);border:1px dashed #cbd5e1;border-radius:12px}
+.hidden{display:none!important}.notice{padding:10px 12px;border-radius:9px;background:#eff6ff;color:#1e40af;font-size:13px;margin-bottom:12px}.dangertext{color:var(--red)}footer{text-align:center;color:var(--muted);font-size:12px;padding:10px}
+@media(min-width:700px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.loan-list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}main{padding:0 18px 40px}header{padding-left:24px}form{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:420px){form{grid-template-columns:1fr}.field.full{grid-column:auto}.loan-top{align-items:flex-start}.amount{font-size:14px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>💼 Socio Préstamos</h1><p>Control sencillo de préstamos, cuotas y cobros</p></div></header>
+<main>
+<div class="stats">
+ <div class="stat"><small>Capital prestado</small><strong id="statCapital">Gs. 0</strong></div>
+ <div class="stat"><small>Saldo pendiente</small><strong id="statSaldo">Gs. 0</strong></div>
+ <div class="stat"><small>Cobrado registrado</small><strong id="statCobrado">Gs. 0</strong></div>
+ <div class="stat"><small>Préstamos activos</small><strong id="statActivos">0</strong></div>
+</div>
+<div class="tabs">
+ <button class="tab active" data-tab="nuevo">＋ Nuevo préstamo</button>
+ <button class="tab" data-tab="lista">Mis préstamos</button>
+ <button class="tab" data-tab="backup">Copias de seguridad</button>
+</div>
+<section id="tab-nuevo" class="panel">
+<h2>Registrar préstamo</h2>
+<div class="notice">Demo local: los datos se guardan en este navegador de tu celular. Exportá una copia de seguridad periódicamente.</div>
+<form id="loanForm">
+ <div class="field"><label for="cliente">Nombre del cliente *</label><input id="cliente" required maxlength="100" placeholder="Nombre y apellido"></div>
+ <div class="field"><label for="telefono">Teléfono</label><input id="telefono" inputmode="tel" placeholder="Número de contacto"></div>
+ <div class="field"><label for="capital">Capital (Gs.) *</label><input id="capital" type="number" min="1" step="1" required inputmode="numeric" placeholder="Ej.: 1000000"><div class="hint">Acepta importes como 1.000.000, 1.500.000 o 2.500.000.</div></div>
+ <div class="field"><label for="tipo">Tipo de préstamo</label><select id="tipo"><option value="Personal">Personal</option><option value="Comercial">Comercial</option></select></div>
+ <div class="field"><label for="metodo">Cálculo de interés</label><select id="metodo"><option value="porcentaje">Porcentaje (%)</option><option value="fijo">Monto fijo (Gs.)</option></select></div>
+ <div class="field"><label id="interesLabel" for="interes">Interés (%) por período</label><input id="interes" type="number" min="0" step="any" value="10" required inputmode="decimal"></div>
+ <div class="field"><label for="frecuencia">Frecuencia de pago</label><select id="frecuencia"><option value="Diario">Diario</option><option value="Semanal">Semanal</option><option value="Quincenal">Quincenal</option><option value="Mensual">Mensual</option></select></div>
+ <div class="field"><label for="sistema">Sistema de pago</label><select id="sistema"><option value="cuotas">Capital + interés en cuotas</option><option value="final">Intereses periódicos y capital al final</option></select></div>
+ <div class="field"><label for="cuotas">Cantidad de cuotas/períodos</label><input id="cuotas" type="number" min="1" step="1" value="10" required inputmode="numeric"></div>
+ <div class="field"><label for="fecha">Fecha del préstamo</label><input id="fecha" type="date" required></div>
+ <div class="field full"><label for="notas">Notas (opcional)</label><input id="notas" maxlength="250" placeholder="Referencia u observaciones"></div>
+ <div class="field full"><button class="primary" type="submit">Guardar préstamo</button></div>
+</form>
+</section>
+<section id="tab-lista" class="panel hidden">
+ <h2>Mis préstamos</h2>
+ <div class="field" style="margin-bottom:12px"><label for="buscar">Buscar cliente</label><input id="buscar" placeholder="Escribí un nombre..."></div>
+ <div id="loanList" class="list"></div>
+</section>
+<section id="tab-backup" class="panel hidden">
+ <h2>Copias de seguridad</h2>
+ <p>Guardá una copia en Descargas y, si querés, subila a tu nube. Para restaurar, elegí un archivo JSON exportado desde esta app.</p>
+ <div class="actions"><button class="primary" id="exportar">Descargar copia JSON</button><button class="secondary" id="elegirImportar">Restaurar copia</button><input id="archivoImportar" type="file" accept=".json,application/json" class="hidden"></div>
+ <p class="hint">Restaurar reemplazará los datos que estén guardados actualmente en este navegador.</p>
+ <div class="actions"><button class="danger" id="borrarTodo">Borrar todos los datos</button></div>
+</section>
+<footer>Socio Préstamos · Demo inicial</footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const KEY = 'socio_prestamos_v1';
+let loans = [];
+try { loans = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(loans)) loans=[]; } catch(e) { loans=[]; }
+const today = new Date(); $('fecha').value = new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const money = n => 'Gs. ' + Math.round(Number(n)||0).toLocaleString('es-PY');
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){localStorage.setItem(KEY,JSON.stringify(loans));render();}
+function calc(l){
+ const capital=Number(l.capital)||0, rate=Number(l.interes)||0, periods=Math.max(1,Number(l.cuotas)||1);
+ const interest=l.metodo==='fijo'?rate*periods:capital*rate/100*periods;
+ const total=capital+interest;
+ return {interest,total,periods,installment:l.sistema==='cuotas'?total/periods:interest/periods};
+}
+function totals(){
+ let capital=0,saldo=0,cobrado=0,activos=0;
+ loans.forEach(l=>{const c=calc(l);const paid=(l.pagos||[]).reduce((a,p)=>a+Number(p.monto||0),0);capital+=Number(l.capital);saldo+=Math.max(0,c.total-paid);cobrado+=paid;if(c.total-paid>0)activos++;});
+ $('statCapital').textContent=money(capital);$('statSaldo').textContent=money(saldo);$('statCobrado').textContent=money(cobrado);$('statActivos').textContent=activos;
+}
+function render(){
+ totals(); const q=($('buscar')?.value||'').toLowerCase().trim();
+ const filtered=loans.filter(l=>String(l.cliente).toLowerCase().includes(q));
+ $('loanList').innerHTML=filtered.length?filtered.slice().reverse().map(l=>{
+  const c=calc(l),paid=(l.pagos||[]).reduce((a,p)=>a+Number(p.monto||0),0),balance=Math.max(0,c.total-paid);
+  return `<article class="loan"><div class="loan-top"><div><h3>${esc(l.cliente)}</h3><p>${esc(l.telefono||'Sin teléfono')} · ${esc(l.tipo)} · ${esc(l.fecha)}</p></div><div class="amount">${money(balance)}<div class="pill">${balance<=0?'Cancelado':'Pendiente'}</div></div></div>
+  <p>Capital: <b>${money(l.capital)}</b> · Interés total estimado: ${money(c.interest)}</p>
+  <p>${esc(l.frecuencia)} · ${l.cuotas} período(s) · ${l.sistema==='cuotas'?'Capital + interés en cuotas':'Interés periódico y capital al final'}</p>
+  ${l.notas?`<p>Nota: ${esc(l.notas)}</p>`:''}
+  <div class="actions">${balance>0?`<button class="primary" onclick="registrarPago('${l.id}')">Registrar cobro</button>`:''}<button class="secondary" onclick="verPagos('${l.id}')">Historial de pagos</button><button class="danger" onclick="eliminar('${l.id}')">Eliminar</button></div></article>`;
+ }).join(''):'<div class="empty">Todavía no hay préstamos registrados.</div>';
+}
+$('metodo').addEventListener('change',()=>{$('interesLabel').textContent=$('metodo').value==='fijo'?'Interés fijo (Gs.) por período':'Interés (%) por período';$('interes').value=$('metodo').value==='fijo'?'50000':'10';});
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));['nuevo','lista','backup'].forEach(t=>$('tab-'+t).classList.toggle('hidden',t!==b.dataset.tab));if(b.dataset.tab==='lista')render();}));
+$('loanForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const capital=Number($('capital').value), interes=Number($('interes').value), cuotas=Number($('cuotas').value);
+ if(!Number.isFinite(capital)||capital<=0||!Number.isFinite(interes)||interes<0||!Number.isInteger(cuotas)||cuotas<1){alert('Revisá capital, interés y cantidad de cuotas.');return;}
+ const loan={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),cliente:$('cliente').value.trim(),telefono:$('telefono').value.trim(),capital,tipo:$('tipo').value,metodo:$('metodo').value,interes,frecuencia:$('frecuencia').value,sistema:$('sistema').value,cuotas,fecha:$('fecha').value,notas:$('notas').value.trim(),pagos:[]};
+ if(!loan.cliente){alert('Ingresá el nombre del cliente.');return;}
+ loans.push(loan);save();e.target.reset();$('fecha').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);$('interes').value='10';alert('Préstamo guardado correctamente.');document.querySelector('[data-tab="lista"]').click();
+});
+window.registrarPago=id=>{
+ const l=loans.find(x=>x.id===id);if(!l)return;const c=calc(l),paid=(l.pagos||[]).reduce((a,p)=>a+Number(p.monto||0),0),balance=Math.max(0,c.total-paid);
+ const raw=prompt('Saldo pendiente: '+money(balance)+'\nIngresá el monto cobrado en Gs.:');
+ if(raw===null)return;const amount=Number(raw);
+ if(!Number.isFinite(amount)||amount<=0){alert('Monto inválido.');return;}if(amount>balance){if(!confirm('El monto supera el saldo pendiente. ¿Registrar igualmente?'))return;}
+ l.pagos=l.pagos||[];l.pagos.push({monto:amount,fecha:new Date().toISOString().slice(0,10)});save();alert('Cobro registrado.');
+};
+window.verPagos=id=>{const l=loans.find(x=>x.id===id);if(!l)return;const ps=l.pagos||[];alert(ps.length?'Historial de '+l.cliente+':\n'+ps.map((p,i)=>(i+1)+'. '+p.fecha+' — '+money(p.monto)).join('\n')+'\nTotal cobrado: '+money(ps.reduce((a,p)=>a+Number(p.monto),0)):'Este préstamo todavía no tiene pagos registrados.');};
+window.eliminar=id=>{if(!confirm('¿Eliminar este préstamo y su historial de pagos?'))return;loans=loans.filter(l=>l.id!==id);save();};
+$('buscar').addEventListener('input',render);
+$('exportar').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({app:'Socio Préstamos',version:1,exportado:new Date().toISOString(),prestamos:loans},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='copia-socio-prestamos.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
+$('elegirImportar').addEventListener('click',()=>$('archivoImportar').click());
+$('archivoImportar').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());const arr=Array.isArray(data)?data:data.prestamos;if(!Array.isArray(arr))throw Error();if(!confirm('Esto reemplazará los datos actuales. ¿Continuar?'))return;loans=arr;save();alert('Copia restaurada.');}catch(err){alert('No se pudo leer la copia. Elegí un JSON exportado desde esta app.');}e.target.value='';});
+$('borrarTodo').addEventListener('click',()=>{if(confirm('¿Seguro que querés borrar todos los préstamos y pagos de este navegador?')){loans=[];save();alert('Datos borrados.');}});
+render();
+</script>
+</body>
+</html>
